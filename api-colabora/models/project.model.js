@@ -10,7 +10,11 @@ const ProjectSchema = mongoose.Schema({
     },
     creationDate: {
         type: Date,
-        default: Date.now
+        required: true
+    },
+    endDate: {
+        type: Date,
+        required: true
     },
     userInCharge:{
         type: String,

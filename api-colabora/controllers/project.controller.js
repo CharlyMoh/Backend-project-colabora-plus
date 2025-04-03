@@ -24,9 +24,9 @@ const getProjectById = async (req, res) => {
 // Crear un proyecto
 const createProject = async (req, res) => {
     try {
-        const { nameProject, description, userInCharge, teammates, state } = req.body;
+        const { nameProject, description, userInCharge, teammates, state, endDate } = req.body;
 
-        if (!nameProject || !description || !userInCharge || !state) {
+        if (!nameProject || !description || !userInCharge || !state || !endDate) {
             return res.status(400).json({ error: "Todos los campos obligatorios deben estar llenos" });
         }
 
@@ -35,7 +35,9 @@ const createProject = async (req, res) => {
             description: description.trim(),
             userInCharge: userInCharge.trim(),
             teammates,
-            state: state.trim()
+            state: state.trim(),
+            creationDate: new Date(), // Asigna la fecha de creación automáticamente
+            endDate: new Date(endDate) // Asegura que `endDate` sea un objeto de tipo Date
         });
 
         await newProject.save();
@@ -50,7 +52,17 @@ const createProject = async (req, res) => {
 const updateProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedProject = await Project.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+        const { endDate } = req.body;
+
+        if (endDate && isNaN(Date.parse(endDate))) {
+            return res.status(400).json({ error: "La fecha de finalización no es válida" });
+        }
+
+        const updatedProject = await Project.findByIdAndUpdate(
+            id,
+            { ...req.body, endDate: endDate ? new Date(endDate) : undefined },
+            { new: true, runValidators: true }
+        );
 
         if (!updatedProject) {
             return res.status(404).json({ message: "Proyecto no encontrado" });
